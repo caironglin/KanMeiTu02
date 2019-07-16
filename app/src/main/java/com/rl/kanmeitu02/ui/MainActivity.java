@@ -11,6 +11,7 @@ import com.rl.kanmeitu02.R;
 import com.rl.kanmeitu02.api.SisterApi;
 import com.rl.kanmeitu02.bean.Sister;
 import com.rl.kanmeitu02.data.PictureLoader;
+import com.rl.kanmeitu02.data.imgloader.SisterLoader;
 
 import java.util.ArrayList;
 
@@ -27,6 +28,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private PictureLoader loader;
     private SisterApi sisterApi;
     private SisterTask sisterTask;
+    private SisterLoader mLoader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         sisterApi = new SisterApi();
         loader = new PictureLoader();
+        mLoader = SisterLoader.getInstance(MainActivity.this);
         initData();
         initUI();
     }
@@ -51,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void initData() {
         data = new ArrayList<>();
-//        new SisterTask().execute();
+        new SisterTask().execute();
     }
 
     @Override
@@ -62,7 +65,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     if (curPos > 9) {
                         curPos = 0;
                     }
-                    loader.load(showImg, data.get(curPos).getUrl());
+//                    loader.load(showImg, data.get(curPos).getUrl());
+                    mLoader.bindBitmap(data.get(curPos).getUrl(),showImg,400,400);
                     curPos++;
                 }
                 break;
@@ -103,7 +107,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         protected void onCancelled() {
             super.onCancelled();
-            sisterTask = null;
+            sisterTask.cancel(true);
+            if (sisterTask != null){
+                sisterTask.cancel(true);
+            }
         }
 
     }
