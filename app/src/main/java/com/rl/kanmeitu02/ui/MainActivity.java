@@ -82,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case R.id.btn_next:
+//                int a = 1/0; // 模拟出错，测试奔溃日志采集类
                 previousBtn.setVisibility(View.VISIBLE);
                 if (curPos < data.size()){
                     ++curPos;
