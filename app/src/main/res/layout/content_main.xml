@@ -22,21 +22,21 @@
         tools:ignore="MissingConstraints" />
 
     <Button
-        android:id="@+id/btn_show"
+        android:id="@+id/btn_next"
+        android:text="下一个"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/button_show"
         app:layout_constraintHorizontal_bias="0.665"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/img_show" />
 
     <Button
-        android:id="@+id/btn_refresh"
-        android:text="更新"
+        android:id="@+id/btn_previous"
+        android:text="上一个"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintRight_toLeftOf="@id/btn_show"
+        app:layout_constraintRight_toLeftOf="@id/btn_next"
         app:layout_constraintTop_toBottomOf="@id/img_show"/>
     
 </android.support.constraint.ConstraintLayout>

@@ -9,7 +9,7 @@ public class Sister {
     private String source;
     private String type;
     private String url;
-    private boolean used;
+    private int used;
     private String who;
 
     public String get_id() {
@@ -68,11 +68,11 @@ public class Sister {
         this.url = url;
     }
 
-    public boolean isUsed() {
+    public int getUsed() {
         return used;
     }
 
-    public void setUsed(boolean used) {
+    public void setUsed(int used) {
         this.used = used;
     }
 
@@ -82,5 +82,20 @@ public class Sister {
 
     public void setWho(String who) {
         this.who = who;
+    }
+
+    @Override
+    public String toString() {
+        return "Sister{" +
+                "_id='" + _id + '\'' +
+                ", createAt='" + createAt + '\'' +
+                ", desc='" + desc + '\'' +
+                ", publishedAt='" + publishedAt + '\'' +
+                ", source='" + source + '\'' +
+                ", type='" + type + '\'' +
+                ", url='" + url + '\'' +
+                ", used=" + used +
+                ", who='" + who + '\'' +
+                '}';
     }
 }

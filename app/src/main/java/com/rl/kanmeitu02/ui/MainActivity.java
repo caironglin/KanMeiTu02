@@ -1,8 +1,10 @@
 package com.rl.kanmeitu02.ui;
 
+import android.app.Activity;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -12,14 +14,18 @@ import com.rl.kanmeitu02.api.SisterApi;
 import com.rl.kanmeitu02.bean.Sister;
 import com.rl.kanmeitu02.data.PictureLoader;
 import com.rl.kanmeitu02.data.imgloader.SisterLoader;
+import com.rl.kanmeitu02.db.SisterDBHelper;
+import com.rl.kanmeitu02.utils.NetworkUtils;
 
 import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
-    private Button showBtn;
-    private Button refreshBtn;
+    private static final String TAG = "MainActivity";
+
+    private Button previousBtn;
+    private Button nextBtn;
     private ImageView showImg;
 
     private ArrayList<Sister> data;
@@ -29,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private SisterApi sisterApi;
     private SisterTask sisterTask;
     private SisterLoader mLoader;
+    private SisterDBHelper mDbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,54 +45,58 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         sisterApi = new SisterApi();
         loader = new PictureLoader();
         mLoader = SisterLoader.getInstance(MainActivity.this);
+        mDbHelper = SisterDBHelper.getInstance();
         initData();
         initUI();
     }
 
     private void initUI() {
-        showBtn = (Button) findViewById(R.id.btn_show);
-        refreshBtn = (Button) findViewById(R.id.btn_refresh);
+        previousBtn = (Button) findViewById(R.id.btn_previous);
+        nextBtn = (Button) findViewById(R.id.btn_next);
         showImg = (ImageView) findViewById(R.id.img_show);
 
 
-        showBtn.setOnClickListener(this);
-        refreshBtn.setOnClickListener(this);
+        previousBtn.setOnClickListener(this);
+        nextBtn.setOnClickListener(this);
     }
 
     private void initData() {
         data = new ArrayList<>();
-        new SisterTask().execute();
+        sisterTask = new SisterTask();
+        sisterTask.execute();
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.btn_show:
-                if(data != null && !data.isEmpty()) {
-                    if (curPos > 9) {
-                        curPos = 0;
-                    }
-//                    loader.load(showImg, data.get(curPos).getUrl());
+            case R.id.btn_previous:
+                --curPos;
+                if (curPos == 0){
+                    previousBtn.setVisibility(View.INVISIBLE);
+                }
+                if(curPos == data.size()-1){
+                    sisterTask = new SisterTask();
+                    sisterTask.execute();
+                }else if (curPos < data.size()){
                     mLoader.bindBitmap(data.get(curPos).getUrl(),showImg,400,400);
-                    curPos++;
                 }
                 break;
-            case R.id.btn_refresh:
-                page++;
-                sisterTask = new SisterTask();
-                sisterTask.execute();
-                curPos = 0;
+            case R.id.btn_next:
+                previousBtn.setVisibility(View.VISIBLE);
+                if (curPos < data.size()){
+                    ++curPos;
+                }
+                if (curPos > data.size() - 1){
+                    sisterTask = new SisterTask();
+                    sisterTask.execute();
+                }else if (curPos < data.size()){
+                    mLoader.bindBitmap(data.get(curPos).getUrl(),showImg,400,400);
+                }
                 break;
         }
     }
 
     private class SisterTask extends AsyncTask<Void,Void,ArrayList<Sister>> {
-
-//        private int page;
-
-//        public SisterTask(int page) {
-//            this.page = page;
-//        }
 
         public SisterTask(){
 
@@ -93,15 +104,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         protected ArrayList<Sister> doInBackground(Void... params) {
-            return sisterApi.fetchSister(10,page);
+//            return sisterApi.fetchSister(10,page);
+            ArrayList<Sister> result = new ArrayList<>();
+            if (page < (curPos+1)/10 + 1){
+                ++page;
+            }
+            // 判断是否有网络
+            if (NetworkUtils.isAvailable(getApplicationContext())){
+                result = sisterApi.fetchSister(10,page);
+                // 查询数据库里有多少个妹子避免重复插入
+                Log.d(TAG,"妹子个数:"+mDbHelper.getSistersCount());
+                if (mDbHelper.getSistersCount() / 10 < page){
+                    mDbHelper.insertSisters(result);
+                }
+            }else {
+                result.clear();
+                result.addAll(mDbHelper.getSistersLimit(page - 1, 10));
+            }
+            return result;
         }
 
         @Override
         protected void onPostExecute(ArrayList<Sister> sisters) {
             super.onPostExecute(sisters);
-            data.clear();
+//            data.clear();
+//            data.addAll(sisters);
+//            page++;
             data.addAll(sisters);
-            page++;
+            if (data.size() > 0 && curPos + 1 < data.size()) {
+                mLoader.bindBitmap(data.get(curPos).getUrl(), showImg, 400, 400);
+            }
         }
 
         @Override
@@ -118,6 +150,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        sisterTask.cancel(true);
+        if (sisterTask != null){
+            sisterTask.cancel(true);
+        }
+
     }
 }
