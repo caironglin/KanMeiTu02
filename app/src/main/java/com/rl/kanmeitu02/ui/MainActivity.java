@@ -1,11 +1,12 @@
 package com.rl.kanmeitu02.ui;
 
-import android.app.Activity;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -17,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.rl.kanmeitu02.R;
 import com.rl.kanmeitu02.api.SisterApi;
@@ -24,7 +26,10 @@ import com.rl.kanmeitu02.bean.Sister;
 import com.rl.kanmeitu02.data.PictureLoader;
 import com.rl.kanmeitu02.data.imgloader.SisterLoader;
 import com.rl.kanmeitu02.db.SisterDBHelper;
+import com.rl.kanmeitu02.ui.fragment.SettingFragment;
 import com.rl.kanmeitu02.utils.NetworkUtils;
+import com.rl.kanmeitu02.utils.PackageUtils;
+import com.rl.kanmeitu02.utils.ResUtils;
 
 import java.util.ArrayList;
 
@@ -51,6 +56,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private NavigationView nav_view;
     private FloatingActionButton fab_github;
 
+    private TextView tv_nav_title;
+
+    private FragmentManager mFgManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,8 +69,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         loader = new PictureLoader();
         mLoader = SisterLoader.getInstance(MainActivity.this);
         mDbHelper = SisterDBHelper.getInstance();
-        initData();
+        mFgManager = getSupportFragmentManager();
+
         initUI();
+        initData();
     }
 
     private void initUI() {
@@ -75,6 +86,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         nav_view = findViewById(R.id.nav_view);
         nav_view.setItemIconTintList(null);
         nav_view.setNavigationItemSelectedListener(this);
+
+        tv_nav_title = nav_view.getHeaderView(0).findViewById(R.id.tv_nav_title);
 
         drawer_layout = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -95,6 +108,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initData() {
+
+        String version = PackageUtils.packageName();
+        if(version != null) {
+            String msg = String.format(ResUtils.getString(R.string.menu_drysister_version), version);
+            tv_nav_title.setText(msg); // bug：设置出错,已修复NullPointerException
+        }
         data = new ArrayList<>();
         sisterTask = new SisterTask();
         sisterTask.execute();
@@ -145,6 +164,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.nav_use_tools:
                 break;
             case R.id.nav_else_setting:
+                startActivity(new Intent(this, SettingActivity.class)); // bug 无法跳转，已修复
                 break;
             case R.id.nav_else_about:
                 break;
