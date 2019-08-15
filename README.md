@@ -8,7 +8,7 @@
 - 编写日志工具类，程序出错自动重启并输出日志文件 --2019.07.19
 
 ##### 界面效果图
-![Drawable 控件](https://github.com/caironglin/KanMeiTu02/1.png)
-![Drawable 控件](https://github.com/caironglin/KanMeiTu02/Screenshot_2019-07-19-02-02-51(1).png)
+![Drawable 控件](https://github.com/caironglin/KanMeiTu02/blob/master/1.png)
+![Drawable 控件](https://github.com/caironglin/KanMeiTu02/blob/master/Screenshot_2019-07-19-02-02-51(1).png)
 ***
 
